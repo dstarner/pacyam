@@ -1,6 +1,7 @@
+#!/usr/bin/env python3
+
 from argparse import ArgumentParser
-from collections import OrderedDict, ChainMap
-from dataclasses import dataclass
+from collections import OrderedDict
 import json
 import os
 import subprocess
@@ -9,16 +10,18 @@ from tempfile import NamedTemporaryFile
 import typing
 
 from jinja2 import Environment, FileSystemLoader
+from pycheckey import KeyEnsurer
 import yaml
 
-from pycheckey import KeyEnsurer
+from dataclasses import dataclass
+
 
 sys.tracebacklimit = 1
 
 
 def parse_arguments():
     """
-    Creates the Argument Parser for running from the 
+    Creates the Argument Parser for running from the
     command line, and returns the parsed args
     """
     parser = ArgumentParser()
@@ -55,7 +58,7 @@ def parse_arguments():
     return parser.parse_args()
 
 
-def _merge_dicts(source, destination):
+def merge_dicts(source, destination):
     """
     Deeply merges two dictionaries, included nested
     keys, merging lists, and updating values.
@@ -66,7 +69,7 @@ def _merge_dicts(source, destination):
         if isinstance(value, dict):
             # get node or create one
             node = destination.setdefault(key, {})
-            _merge_dicts(value, node)
+            merge_dicts(value, node)
         elif isinstance(value, list):
             if key in destination:
                 destination[key].extend(value)
@@ -109,15 +112,16 @@ class Configuration:
             return path
         if os.path.isfile(config_path):
             return config_path
+        raise BuildException(f'Could not find the config file "{config_path}".')
 
     @classmethod
-    def load(cls, root_directory, config_file):
+    def load(cls, root_directory, config_file_name):
         """Read and validate the config file into a Configuration object
         """
         if not os.path.isdir(root_directory):
             raise BuildException(f'Root directory {root_directory} not found.')
 
-        config_path = cls.build_config_file_path(root_directory, config_file)
+        config_path = cls.build_config_file_path(root_directory, config_file_name)
 
         with open(config_path, 'r') as config_file:
             try:
@@ -125,14 +129,14 @@ class Configuration:
                 data = json.load(config_file, object_pairs_hook=OrderedDict)
             except json.decoder.JSONDecodeError:
                 raise BuildException(f'Error parsing JSON file at "{config_path}".')
-            
+
             ensurer = KeyEnsurer(data=data, required_keys=cls.required_keys)
             if not ensurer.validate():
                 separator = "\n  - "
                 raise BuildException(
                     f'Missing required keys: {separator + separator.join(ensurer.missing)}'
                 )
-        
+
         return Configuration(
             root_directory=root_directory,
             config_file_path=config_file,
@@ -164,9 +168,9 @@ class VariableManager:
         """Using the loaded YAML data, deeply merge/flatten the variables
         """
         self.variables = {}
-        for path, variables in reversed(self.variable_data.items()):
+        for _, variables in reversed(self.variable_data.items()):
             if variables:
-                self.variables = _merge_dicts(variables, self.variables)
+                self.variables = merge_dicts(variables, self.variables)
 
     def _build_path(self, path):
         """Easy access to a specific variable path
@@ -177,7 +181,7 @@ class VariableManager:
 class TemplateManager:
     """Loads and manages the pulling and rendering of variables from YAML files
     """
-    
+
     def __init__(self, variable_manager, template_paths, template_root):
         self.variables = variable_manager.variables
         self.template_paths = template_paths
@@ -197,7 +201,6 @@ class TemplateManager:
         )
         for path in self.template_paths:
             template = jinja_env.get_template(path)
-            variables = self.variables
             yaml_string = template.render(self.variables)
             self.template_data[path] = yaml.load(yaml_string)
 
@@ -205,9 +208,9 @@ class TemplateManager:
         """Merge each rendered template into one final template
         """
         template = {}
-        for path, cur_template in reversed(self.template_data.items()):
+        for _, cur_template in reversed(self.template_data.items()):
             if cur_template:
-                self.template = _merge_dicts(cur_template, template)
+                template = merge_dicts(cur_template, template)
         return template
 
 
@@ -228,7 +231,7 @@ class PackerTemplateMerger:
         if not configuration:
             configuration = Configuration.load(
                 root_directory=options.directory,
-                config_file=options.config_path
+                config_file_name=options.config_path
             )
         self.config = configuration
         self.variable_manager = VariableManager(
@@ -240,12 +243,12 @@ class PackerTemplateMerger:
             template_paths=self.config.template_paths,
             template_root=self.config.root_directory
         )
-    
+
 
     def assemble_template(self):
         """The core functionality that builds the template
 
-        Builds the template, and writes it to either a 
+        Builds the template, and writes it to either a
         temp file or to an output file given from command line.
         """
         template = self.template_manager.merge_template_data()
@@ -276,6 +279,7 @@ class PackerTemplateMerger:
         if not self.options.out_file:
             os.unlink(manifest_file)
 
+    # pylint: disable=no-self-use
     def _divider(self, length=70):
         """Prints a pretty divider -----------
         """
@@ -300,10 +304,10 @@ class PackerTemplateMerger:
             for error in output.split('*')[1:]:
                 print(f'* {error}')
             return False
-        else:
-            print('-- Template Passed Validation --')
+
+        print('-- Template Passed Validation --')
         return True
-        
+
     def _build_template(self, manifest_file):
         """Run `packer build` on a manifest_file path
         """
@@ -314,7 +318,8 @@ class PackerTemplateMerger:
                 break
             if output:
                 print(output.strip().decode('utf-8'))
-            rc = process.poll()
+            process.poll()
+
 
 
 def main():
