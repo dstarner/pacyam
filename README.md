@@ -102,6 +102,8 @@ An example of the `config.json` file would be:
 
 ## Getting Started Guide
 
+This guide assumes you already have experience writing [Packer template files](https://www.packer.io/intro/getting-started/build-image.html) and are familiar with the [PacYam Core Concepts](#core-concepts). 
+
 ## Development
 
 Getting started with development is achieved by cloning the repository, and getting `virtualenv` set up.
