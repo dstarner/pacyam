@@ -271,7 +271,13 @@ class PackerTemplateMerger:
         )
         out_file.close()
 
-        if self._validate_template(manifest_file) and not self.options.dry_run:
+        conditions_to_build = all([
+            self._validate_template(manifest_file),
+            not self.options.dry_run,
+            not self.options.skip_build
+        ])
+
+        if conditions_to_build:
             self._build_template(manifest_file)
 
         if self.options.dry_run:
