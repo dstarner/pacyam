@@ -52,7 +52,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url=repository,
     keywords=keywords,
-    packages=setuptools.find_packages(exclude=("tests",)),
+    packages=setuptools.find_packages(exclude=('tests', 'pacyam.tests', 'pacyam/tests')),
     install_requires=reqs('requirements.txt'),
     classifiers=[
         "Programming Language :: Python :: 3",
@@ -61,6 +61,6 @@ setuptools.setup(
     ],
     python_requires='>3.5.2',
     entry_points = {
-        'console_scripts': ['pacyam=scripts.pacyam:main'],
+        'console_scripts': ['pacyam=pacyam.scripts.pacyam:main'],
     }
 )

@@ -1,5 +1,7 @@
 # PacYam
 
+[![Build Status](https://travis-ci.org/dstarner/pacyam.svg?branch=master)](https://travis-ci.org/dstarner/pacyam)
+
 PacYam is a command line program that makes designing and developing of multi-environment Packer images a breeze. 
 
 One of the major issues that I had with Packer was that the image description files got way too out of hand way too quickly. JSON adds up and nests very quickly, and this is not helped by the fact that comments are not allowed. It led to a very unsatisfying experience.
@@ -103,6 +105,20 @@ An example of the `config.json` file would be:
 ## Getting Started Guide
 
 This guide assumes you already have experience writing [Packer template files](https://www.packer.io/intro/getting-started/build-image.html) and are familiar with the [PacYam Core Concepts](#core-concepts). 
+
+First, install the package, either globally or in a virtual environment.
+
+```python
+# Recommended. Locally install
+$ pip install pacyam
+
+# Not recommended, but acceptable if desired globally.
+$ sudo -H pip install pacyam
+# OR 
+$ sudo -H pip3 install pacyam
+```
+
+All commands can be viewed through running `pacyam -h`.
 
 ## Development
 

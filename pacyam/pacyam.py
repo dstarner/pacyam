@@ -58,7 +58,7 @@ def parse_arguments():
     return parser.parse_args()
 
 
-def _merge_dicts(source, destination):
+def merge_dicts(source, destination):
     """
     Deeply merges two dictionaries, included nested
     keys, merging lists, and updating values.
@@ -69,7 +69,7 @@ def _merge_dicts(source, destination):
         if isinstance(value, dict):
             # get node or create one
             node = destination.setdefault(key, {})
-            _merge_dicts(value, node)
+            merge_dicts(value, node)
         elif isinstance(value, list):
             if key in destination:
                 destination[key].extend(value)
@@ -170,7 +170,7 @@ class VariableManager:
         self.variables = {}
         for _, variables in reversed(self.variable_data.items()):
             if variables:
-                self.variables = _merge_dicts(variables, self.variables)
+                self.variables = merge_dicts(variables, self.variables)
 
     def _build_path(self, path):
         """Easy access to a specific variable path
@@ -210,7 +210,7 @@ class TemplateManager:
         template = {}
         for _, cur_template in reversed(self.template_data.items()):
             if cur_template:
-                template = _merge_dicts(cur_template, template)
+                template = merge_dicts(cur_template, template)
         return template
 
 
