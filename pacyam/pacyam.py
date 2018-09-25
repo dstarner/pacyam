@@ -24,7 +24,9 @@ def parse_arguments():
     Creates the Argument Parser for running from the
     command line, and returns the parsed args
     """
-    parser = ArgumentParser()
+    parser = ArgumentParser(
+        description='Validate & build Packer images from template files.'
+    )
     parser.add_argument(
         'directory',
         metavar='directory',
