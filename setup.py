@@ -1,7 +1,7 @@
 import os
-from setuptools import setup
+import setuptools
 
-name = 'PacYam'
+name = 'pacyam'
 version = '0.1'
 author = 'Daniel Starner'
 email = 'starner.daniel5@gmail.com'

@@ -143,5 +143,16 @@ $ pytest
 Run the linter with the following:
 
 ```bash
-$ pylint scripts tests
+$ pylint pacyam
+```
+
+## Deploying to Pypi
+
+Only Dan has access to do this, so its not worth your while to read...
+
+**Update the version!!**
+
+```bash
+$ python3 setup.py sdist bdist_wheel
+$ twine upload --repository-url https://upload.pypi.org/legacy/ dist/*
 ```
