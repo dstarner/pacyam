@@ -2,7 +2,7 @@ import os
 import setuptools
 
 name = 'pacyam'
-version = '0.1'
+version = '0.1.1'
 author = 'Daniel Starner'
 email = 'starner.daniel5@gmail.com'
 description = 'Command line program that makes designing and developing of multi-environment Packer images a breeze.'
@@ -61,6 +61,6 @@ setuptools.setup(
     ],
     python_requires='>=3.7',
     entry_points = {
-        'console_scripts': ['pacyam=pacyam.scripts.pacyam:main'],
+        'console_scripts': ['pacyam=pacyam.pacyam:main'],
     }
 )
