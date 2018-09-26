@@ -227,6 +227,10 @@ boot_command:
 - ...  # Other commands
 ```
 
+## Issues & Contribution
+
+If you are interested in any new features, feel free to open as many issues as you want! If you are feeling adventurous and *want to fix them*, then please fork this repository and create a Pull Request.
+
 ## Development
 
 Getting started with development is achieved by cloning the repository, and getting `virtualenv` set up.
@@ -251,15 +255,4 @@ Run the linter with the following:
 
 ```bash
 $ pylint pacyam
-```
-
-## Deploying to Pypi
-
-Only Dan has access to do this, so its not worth your while to read...
-
-**Update the version!!**
-
-```bash
-$ python3 setup.py sdist bdist_wheel
-$ twine upload --repository-url https://upload.pypi.org/legacy/ dist/*
 ```
