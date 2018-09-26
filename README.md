@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.org/dstarner/pacyam.svg?branch=master)](https://travis-ci.org/dstarner/pacyam)
 
+![PacYam Logo](images/PacYam.png)
+
 PacYam is a command line program that makes designing and developing of multi-environment Packer images a breeze. 
 
 One of the major issues that I had with Packer was that the image description files got way too out of hand way too quickly. JSON adds up and nests very quickly, and this is not helped by the fact that comments are not allowed. It led to a very unsatisfying experience.
