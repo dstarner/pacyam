@@ -158,10 +158,8 @@ For each top-level YAML file that you create and want to use in rendering, place
 {
     "templates": [
         "builders/virtualbox.yaml"
-    ],
-    .
-    .
-    .
+    ]
+}
 ```
 
 Just as with templates, include variables under the `"variables"` key in `config.json`. Precendence of variables defined take the same order of increasing priority.
@@ -181,6 +179,10 @@ Just as with templates, include variables under the `"variables"` key in `config
 ### Validating and Building
 
 To run PacYam, we will provide the CLI with the directory containing the config file, along with any other options we want to add. It will always follow the steps of rendering the template, validating it, and then building the image. If you want a different experience, check out the options below.
+
+```bash
+$ pacyam .
+```
 
 Before you build your image, it is recommended to `--dry-run` the template compilation, to ensure that its what you expect. This will render, validate, and output the Packer template to the console, without actually building it. The `-d` flag also works.
 
