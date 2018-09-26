@@ -156,10 +156,8 @@ For each top-level YAML file that you create and want to use in rendering, place
 {
     "templates": [
         "builders/virtualbox.yaml"
-    ],
-    .
-    .
-    .
+    ]
+}
 ```
 
 Just as with templates, include variables under the `"variables"` key in `config.json`. Precendence of variables defined take the same order of increasing priority.
