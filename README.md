@@ -178,6 +178,10 @@ Just as with templates, include variables under the `"variables"` key in `config
 
 To run PacYam, we will provide the CLI with the directory containing the config file, along with any other options we want to add. It will always follow the steps of rendering the template, validating it, and then building the image. If you want a different experience, check out the options below.
 
+```bash
+$ pacyam .
+```
+
 Before you build your image, it is recommended to `--dry-run` the template compilation, to ensure that its what you expect. This will render, validate, and output the Packer template to the console, without actually building it. The `-d` flag also works.
 
 If you want to specify an output file for the Packer template, provide the `[ --out | -o ] OUT_FILE` option. This will output the template to a file of your choice.
