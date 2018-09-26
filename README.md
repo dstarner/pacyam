@@ -89,7 +89,7 @@ For all file paths listed in `config.json`, they can be included either using th
 
 An example of the `config.json` file would be:
 
-```
+```json
 {
     "templates": [
         "builders/virtualbox.yaml"
@@ -108,7 +108,7 @@ This guide assumes you already have experience writing [Packer template files](h
 
 First, install the package, either globally or in a virtual environment.
 
-```python
+```bash
 # Recommended. Locally install
 $ pip install pacyam
 
@@ -118,7 +118,110 @@ $ sudo -H pip install pacyam
 $ sudo -H pip3 install pacyam
 ```
 
-All commands can be viewed through running `pacyam -h`.
+All commands and options can be viewed through running `pacyam -h`.
+
+Create a new project directory, as this will house all the templates for your image. 
+
+```bash
+$ mkdir ubuntu-18.04
+$ cd ubuntu-18.04
+```
+
+Once inside, create a project structure that meets your needs. I find the following is helpful, as it breaks out each top level component in the project, as well as includes variables.
+
+```
+. <Project Root>
+├── builders
+│   ├── virtualbox.yaml
+│   ├── qemu.yaml
+│   └── <Other Builders>
+├── config.json
+├── post-processors
+│   ├── compress.yaml
+│   └── <Other Post Processors>
+└── variables
+    ├── default.yaml
+    ├── dev-override.yaml
+    └── <Other Variables>
+```
+
+### Setting Up `config.json`
+
+Create or edit the `config.json` file in the project root. This contains information about the project structure and how to locate files.
+If you have/want multiple configurations, you can specify when you call PacYam by using the `-c <CONFIG FILE>` option.
+
+For each top-level YAML file that you create and want to use in rendering, place the path relative to the root directory in the `templates` key as an array. Arrays of the same key will be concatenated, and all other duplicate keys will be overwritten using the file that declares them at the bottom of the `"templates"` list.
+
+```json
+{
+    "templates": [
+        "builders/virtualbox.yaml"
+    ],
+    .
+    .
+    .
+```
+
+Just as with templates, include variables under the `"variables"` key in `config.json`. Precendence of variables defined take the same order of increasing priority.
+
+```json
+{
+    "templates": [
+        "builders/virtualbox.yaml"
+    ],
+    "variables": [
+        "variables/default.yaml",
+        "variables/overrides.yaml"
+    ]
+}
+```
+
+### Validating and Building
+
+To run PacYam, we will provide the CLI with the directory containing the config file, along with any other options we want to add. It will always follow the steps of rendering the template, validating it, and then building the image. If you want a different experience, check out the options below.
+
+Before you build your image, it is recommended to `--dry-run` the template compilation, to ensure that its what you expect. This will render, validate, and output the Packer template to the console, without actually building it. The `-d` flag also works.
+
+If you want to specify an output file for the Packer template, provide the `[ --out | -o ] OUT_FILE` option. This will output the template to a file of your choice.
+
+### Inlining/Including Other files
+
+PacYam will automate the merging of templates into one final object, but for some keys, it may be preferable to break out specific keys or blocks to other files. This is probably most usable when you want to break apart a template that exists in a list (since they would get concatenated instead of merged), or when you resuse the same block multiple times, such as with `boot_command`. 
+
+Inlining other files is easy, and requires that you add the following to the first line of the file that you want to add the inline to.
+
+**`assets/boot_commands.yaml`**
+```yaml
+boot_command:
+  - "<esc><wait>"
+  - "<esc><wait>"
+  - "<enter><wait>"
+  - "/install/vmlinuz<wait>"
+```
+
+**`builders/virtualbox.yaml`**
+```yaml
+# {% macro include_file(template) %}{% include template %}{% endmacro %}
+builders:
+- type: virtualbox-iso
+  vm_name: "{{ vm_name }}-v{{ version }}"
+  {{ include_file('assets/boot_command.yaml')|indent(2) }}
+```
+
+This may cause your YAML syntax highlighter to complain about the last line, but this will be fixed in future versions.
+
+Notice how we also add the `|indent(2)` to the end of the `include_file` tag. This means to indent *every line except the first* in the file. When you use this macro, place the tag at the proper indent, and then add `|indent(X)` where `X` is the current indent. It should render properly then.
+
+### Using Packer-specific Variables
+
+During the build phase, Packer includes some context variables such as `{{ .HTTP }}` and `{{ .HTTPPort }}`. If placed as-is in the PacYam templates, Jinja would try to replace them with YAML variables, and would fail. To avoid this and keep the Packer variables, wrap the line's value in a `{% raw %}<CODE>{% endraw %}` tag. This tells Jinja to skip rendering anything between the tags. An example would be as follows:
+
+```yaml
+boot_command:
+- ...  # Other commands
+- " {% raw %}preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg<wait>{% endraw %}"
+- ...  # Other commands
+```
 
 ## Development
 
