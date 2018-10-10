@@ -15,7 +15,7 @@ import yaml
 
 from dataclasses import dataclass
 
-__version__ = '0.1.4'
+__version__ = '0.1.5'
 
 sys.tracebacklimit = 1
 
@@ -59,9 +59,9 @@ def parse_arguments():
     )
     parser.add_argument(
         '--version', '-v',
-        dest='show_version',
-        action='store_true',
-        help='Show the current version of PyYam installed.'
+        action='version',
+        help='Show the current version of PyYam installed.',
+        version='%(prog)s {version}'.format(version=__version__)
     )
 
     return parser.parse_args()
@@ -170,7 +170,9 @@ class VariableManager:
         """
         for path in self.variable_paths:
             with open(self._build_path(path), 'r') as variable_file:
-                yaml_data = yaml.load(variable_file)
+                yaml_lines = list(variable_file.readlines())
+                print(yaml_lines)
+                yaml_data = yaml.load(yaml_lines)
             self.variable_data[path] = yaml_data
 
     def _create_variables(self):
@@ -341,9 +343,6 @@ def main():
     """Setup and run the merger after figuring out command line arguments
     """
     command_line_args = parse_arguments()
-    if command_line_args.show_version:
-        print(f'Current Version: v{__version__}')
-        exit(0)
     merger = PackerTemplateMerger(command_line_args)
     merger.assemble_template()
 
