@@ -15,6 +15,7 @@ import yaml
 
 from dataclasses import dataclass
 
+__version__ = '0.1.4'
 
 sys.tracebacklimit = 1
 
@@ -55,6 +56,12 @@ def parse_arguments():
         dest='dry_run',
         action='store_true',
         help='Output the compiled manifest to the console, don\'t actually run anything.'
+    )
+    parser.add_argument(
+        '--version', '-v',
+        dest='show_version',
+        action='store_true',
+        help='Show the current version of PyYam installed.'
     )
 
     return parser.parse_args()
@@ -319,7 +326,7 @@ class PackerTemplateMerger:
     def _build_template(self, manifest_file):
         """Run `packer build` on a manifest_file path
         """
-        process = subprocess.Popen(["packer", "build", manifest_file], stdout=subprocess.PIPE)
+        process = subprocess.Popen(f'packer build {manifest_file}', stdout=subprocess.PIPE, shell=True)
         while True:
             output = process.stdout.readline()
             if output == '' and process.poll() is not None:
@@ -334,6 +341,9 @@ def main():
     """Setup and run the merger after figuring out command line arguments
     """
     command_line_args = parse_arguments()
+    if command_line_args.show_version:
+        print(f'Current Version: v{__version__}')
+        exit(0)
     merger = PackerTemplateMerger(command_line_args)
     merger.assemble_template()
 

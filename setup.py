@@ -1,8 +1,11 @@
 import os
 import setuptools
 
+from pacyam.pacyam import __version__
+
+
 name = 'pacyam'
-version = '0.1.3'
+version = __version__
 author = 'Daniel Starner'
 email = 'starner.daniel5@gmail.com'
 description = 'Command line program that makes designing and developing of multi-environment Packer images a breeze.'
