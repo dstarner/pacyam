@@ -4,5 +4,5 @@ python:
 install:
 - pip install -r dev-requirements.txt
 script:
-- pytest
-- pylint pacyam
+- py.test --cov=pacyam --cov-report term:skip-covered --cov-fail-under=70
+- pylint pacyam tests

@@ -9,18 +9,18 @@ import sys
 from tempfile import NamedTemporaryFile
 import typing
 
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, BaseLoader
 from pycheckey import KeyEnsurer
 import yaml
 
 from dataclasses import dataclass
 
-__version__ = '0.1.5'
+__version__ = '0.2.1'
 
 sys.tracebacklimit = 1
 
 
-def parse_arguments():
+def parse_arguments(args):
     """
     Creates the Argument Parser for running from the
     command line, and returns the parsed args
@@ -38,6 +38,13 @@ def parse_arguments():
         dest='config_path',
         default=os.getenv('CONFIG', 'config.json'),
         help='The path to the configuration file, if not in "directory".'
+    )
+    parser.add_argument(
+        '--var', '-v',
+        dest='vars',
+        action='append',
+        help='Overwrite template variables with "-v name=value".'
+             'Defined template variables may be used.'
     )
     parser.add_argument(
         '--out', '-o',
@@ -58,13 +65,13 @@ def parse_arguments():
         help='Output the compiled manifest to the console, don\'t actually run anything.'
     )
     parser.add_argument(
-        '--version', '-v',
+        '--version',
         action='version',
         help='Show the current version of PyYam installed.',
         version='%(prog)s {version}'.format(version=__version__)
     )
 
-    return parser.parse_args()
+    return parser.parse_args(args)
 
 
 def merge_dicts(source, destination):
@@ -116,19 +123,17 @@ class Configuration:
     def build_config_file_path(root_directory, config_path):
         """Try to find the location of the config file.
         """
-        path = os.path.join(root_directory, 'config.json')
-        if os.path.isfile(path):
-            return path
-        if os.path.isfile(config_path):
-            return config_path
-        raise BuildException(f'Could not find the config file "{config_path}".')
+        full_path = os.path.join(root_directory, config_path)
+        if os.path.isfile(full_path):
+            return full_path
+        raise BuildException(f'Could not find the config file "{full_path}".')
 
     @classmethod
     def load(cls, root_directory, config_file_name):
         """Read and validate the config file into a Configuration object
         """
         if not os.path.isdir(root_directory):
-            raise BuildException(f'Root directory {root_directory} not found.')
+            raise BuildException(f'Root directory "{root_directory}"" not found.')
 
         config_path = cls.build_config_file_path(root_directory, config_file_name)
 
@@ -148,7 +153,7 @@ class Configuration:
 
         return Configuration(
             root_directory=root_directory,
-            config_file_path=config_file,
+            config_file_path=config_path,
             template_paths=data['templates'],
             variable_paths=data.get('variables', [])
         )
@@ -158,30 +163,64 @@ class VariableManager:
     """Loads and manages the pulling of variables from YAML files
     """
 
-    def __init__(self, variable_paths, variable_root):
+    def __init__(self, variable_paths, variable_root, global_variables=None):
+        if not global_variables:
+            global_variables = []
         self.variable_paths = variable_paths
         self.variable_root = variable_root
         self.variable_data = OrderedDict()
+        self.variables = {}
         self._load_variable_files()
-        self._create_variables()
+        self._load_global_variables(global_variables)
+
+    def _yaml_block_to_dict(self, block_list, variables=None):
+        if not variables:
+            variables = self.variables
+        yaml_str = "\n".join(block_list)
+        jinja_env = Environment(
+            loader=BaseLoader,
+            trim_blocks=True,
+            lstrip_blocks=True
+        )
+        var_template = jinja_env.from_string(yaml_str)
+        rendered_data = var_template.render(**variables)
+        new_data = yaml.load(rendered_data)
+        return new_data if new_data else {}
+
+    def _get_variables_from_file(self, full_path):
+        with open(full_path, 'r') as variable_file:
+            yaml_lines = list(variable_file.readlines())
+            yaml_data = {}
+            block = []
+            for line in yaml_lines:
+                if line.isspace() or line.startswith('#'):  # Ignore empty lines
+                    continue
+                if line.startswith(' '):  # Nested lines
+                    block.append(line)
+                else:                     # Brand new global block
+                    new_data = self._yaml_block_to_dict(block, yaml_data)
+                    yaml_data = merge_dicts(yaml_data, new_data)
+                    block = [line]
+
+            if block:  # Anything else remaining in the block
+                new_data = self._yaml_block_to_dict(block, yaml_data)
+                yaml_data = merge_dicts(yaml_data, new_data)
+        return yaml_data
 
     def _load_variable_files(self):
         """Load each variable YAML file into a dict
         """
         for path in self.variable_paths:
-            with open(self._build_path(path), 'r') as variable_file:
-                yaml_lines = list(variable_file.readlines())
-                print(yaml_lines)
-                yaml_data = yaml.load(yaml_lines)
-            self.variable_data[path] = yaml_data
-
-    def _create_variables(self):
-        """Using the loaded YAML data, deeply merge/flatten the variables
-        """
-        self.variables = {}
-        for _, variables in reversed(self.variable_data.items()):
+            variables = self._get_variables_from_file(self._build_path(path))
             if variables:
-                self.variables = merge_dicts(variables, self.variables)
+                self.variable_data[path] = variables
+                merge_dicts(variables, self.variables)
+
+    def _load_global_variables(self, global_variables):
+        for global_variable in global_variables:
+            yaml_str = global_variable.replace('=', ': ')
+            data = self._yaml_block_to_dict([yaml_str], self.variables)
+            merge_dicts(data, self.variables)
 
     def _build_path(self, path):
         """Easy access to a specific variable path
@@ -247,7 +286,8 @@ class PackerTemplateMerger:
         self.config = configuration
         self.variable_manager = VariableManager(
             variable_paths=self.config.variable_paths,
-            variable_root=self.config.root_directory
+            variable_root=self.config.root_directory,
+            global_variables=self.options.vars
         )
         self.template_manager = TemplateManager(
             variable_manager=self.variable_manager,
@@ -297,7 +337,7 @@ class PackerTemplateMerger:
             os.unlink(manifest_file)
 
     # pylint: disable=no-self-use
-    def _divider(self, length=70):
+    def _divider(self, length=80):
         """Prints a pretty divider -----------
         """
         print('-' * length)
@@ -328,10 +368,14 @@ class PackerTemplateMerger:
     def _build_template(self, manifest_file):
         """Run `packer build` on a manifest_file path
         """
-        process = subprocess.Popen(f'packer build {manifest_file}', stdout=subprocess.PIPE, shell=True)
+        process = subprocess.Popen(
+            f'packer build {manifest_file}',
+            stdout=subprocess.PIPE,
+            shell=True
+        )
         while True:
             output = process.stdout.readline()
-            if output == '' and process.poll() is not None:
+            if output == b'' and process.poll() is not None:
                 break
             if output:
                 print(output.strip().decode('utf-8'))
@@ -342,7 +386,7 @@ class PackerTemplateMerger:
 def main():
     """Setup and run the merger after figuring out command line arguments
     """
-    command_line_args = parse_arguments()
+    command_line_args = parse_arguments(sys.argv[1:])
     merger = PackerTemplateMerger(command_line_args)
     merger.assemble_template()
 

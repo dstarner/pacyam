@@ -1,0 +1,11 @@
+{
+    "templates": [
+        "builders/virtualbox.yaml",
+        "builders/virtualbox.yaml",
+        "post-processors/vagrant.yaml",
+        "provisioners/core.yaml"
+    ],
+    "variables": [
+        "variables/default.yaml"
+    ]
+}
