@@ -375,7 +375,7 @@ class PackerTemplateMerger:
         )
         while True:
             output = process.stdout.readline()
-            if output == '' and process.poll() is not None:
+            if output == b'' and process.poll() is not None:
                 break
             if output:
                 print(output.strip().decode('utf-8'))
