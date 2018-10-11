@@ -7,8 +7,8 @@ from pacyam.pacyam import parse_arguments
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 def parse_arg_helper(cli_string):
-        argv = cli_string.split(' ')
-        return parse_arguments(argv)
+    argv = cli_string.split(' ')
+    return parse_arguments(argv)
 
 class CLITestCase(unittest.TestCase):
 

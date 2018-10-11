@@ -8,7 +8,7 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 class VariableManagerTestCase(unittest.TestCase):
 
-    project_root = os.path.join(REPO_ROOT, 'tests', 'project')
+    project_root = os.path.join(REPO_ROOT, 'tests', 'test-configs')
 
     def test_basic_variables(self):
         variable_files = [

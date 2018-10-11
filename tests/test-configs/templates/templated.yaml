@@ -1,0 +1,5 @@
+# {% macro include_file(template) %}{% include template %}{% endmacro %}
+
+builders:
+- type: "{{ type }}"
+  vm_name: ubuntu-1804
