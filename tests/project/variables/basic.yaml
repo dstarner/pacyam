@@ -1,6 +1,0 @@
-# Template Version
-version: 0.1
-
-
-disk_device: /dev/sda
-preseed_location: preseed-vb.cfg
