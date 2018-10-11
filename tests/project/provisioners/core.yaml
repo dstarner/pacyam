@@ -1,0 +1,10 @@
+# provisioners:
+# # Add the vagrant user to sudoers
+# - type: shell
+#   execute_command: "{% raw %}echo 'vagrant' | {{.Vars}} sudo -S -E bash '{{.Path}}'{% endraw %}"
+#   script: scripts/setup.sh
+
+# # Cleanup apt and wait for finish
+# - type: shell
+#   execute_command: "echo '{{ ssh_username }}' | {% raw %}{{.Vars}} sudo -S -E bash '{{.Path}}'{% endraw %}"
+#   script: scripts/cleanup.sh

@@ -1,0 +1,25 @@
+# {% macro include_file(template) %}{% include template %}{% endmacro %}
+
+builders:
+- type: qemu
+  vm_name: "{{ vm_name }}-v{{ version }}"
+  headless: {{ headless }}
+  accelerator: kvm
+  http_directory: http    # Serve any files in `http` dir to VM 
+
+  # Interfaces / Hardware
+  disk_interface: virtio  # Fastest, good where we have redundant VMs
+
+  # ISO Configuration
+  iso_url: "{{ iso_url }}"
+  iso_checksum: "{{ iso_checksum }}"
+  iso_checksum_type: "{{ iso_checksum_type }}"
+
+  ssh_username: "{{ ssh_username }}"
+  ssh_password: "{{ ssh_password }}"
+  ssh_port: 22
+  ssh_wait_timeout: 1000s  # Allows for setup to finish before connecting
+  
+  # Box Configuration
+  shutdown_command: "echo 'packer' |sudo -S shutdown -P now"
+  {{ include_file('assets/boot_command.yaml')|indent(2) }}

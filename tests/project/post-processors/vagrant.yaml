@@ -1,0 +1,3 @@
+post-processors:
+- type: vagrant
+  output: "build/{% raw %}{{.Provider}}{% endraw %}-{{ vm_name }}-v{{ version }}.box"
