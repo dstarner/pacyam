@@ -1,0 +1,6 @@
+# This file is used solely for testing purposes
+some_list:
+  - val1
+  - val2
+
+not_list: hello

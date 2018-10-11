@@ -51,3 +51,30 @@ class VariableManagerTestCase(unittest.TestCase):
         )
         variables = manager.variables
         self.assertEqual(variables, expected)
+
+    def test_list_variables(self):
+        variable_files = [
+            'variables/list.yaml'
+        ]
+        expected = {'not_list': 'hello', 'some_list': ['val1', 'val2']}
+
+        manager = VariableManager(
+            variable_files,
+            self.project_root
+        )
+        variables = manager.variables
+        self.assertEqual(variables, expected)
+
+    def test_global_variables(self):
+        variable_files = [
+            'variables/list.yaml'
+        ]
+        expected = {'not_list': 'world', 'some_list': ['val1', 'val2']}
+
+        manager = VariableManager(
+            variable_files,
+            self.project_root,
+            global_variables=['not_list=world']
+        )
+        variables = manager.variables
+        self.assertEqual(variables, expected)

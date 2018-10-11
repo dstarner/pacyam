@@ -28,6 +28,15 @@ class ConfigurationTestCase(unittest.TestCase):
                 config_file_name=config_path
             )
 
+    def test_invalid_json_file(self):
+        root = self.test_configs_root
+        config_path = 'bad_json.json'
+        with self.assertRaises(BuildException):
+            Configuration.load(
+                root_directory=root,
+                config_file_name=config_path
+            )
+
     def test_unique_config_path(self):
         root = self.test_configs_root
         config_path = 'some-unique-name.json'

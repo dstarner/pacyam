@@ -20,7 +20,7 @@ __version__ = '0.1.5'
 sys.tracebacklimit = 1
 
 
-def parse_arguments():
+def parse_arguments(args):
     """
     Creates the Argument Parser for running from the
     command line, and returns the parsed args
@@ -71,7 +71,7 @@ def parse_arguments():
         version='%(prog)s {version}'.format(version=__version__)
     )
 
-    return parser.parse_args()
+    return parser.parse_args(args)
 
 
 def merge_dicts(source, destination):
@@ -386,7 +386,7 @@ class PackerTemplateMerger:
 def main():
     """Setup and run the merger after figuring out command line arguments
     """
-    command_line_args = parse_arguments()
+    command_line_args = parse_arguments(sys.argv[1:])
     merger = PackerTemplateMerger(command_line_args)
     merger.assemble_template()
 
