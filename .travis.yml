@@ -4,5 +4,10 @@ python:
 install:
 - pip install -r dev-requirements.txt
 script:
+<<<<<<< HEAD
 - py.test --cov=pacyam --cov-report term:skip-covered --cov-fail-under=70
 - pylint pacyam tests
+=======
+- py.test --cov=pacyam --cov-report term:skip-covered
+- pylint pacyam
+>>>>>>> Coverage reporting
