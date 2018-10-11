@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/dstarner/pacyam.svg?branch=master)](https://travis-ci.org/dstarner/pacyam)
 
-![PacYam Logo](images/PacYam.png)
+![PacYam Logo](https://raw.githubusercontent.com/dstarner/pacyam/master/images/PacYam.png)
 
 PacYam is a command line program that makes designing and developing of multi-environment Packer images a breeze. 
 
