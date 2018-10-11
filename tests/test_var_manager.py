@@ -1,7 +1,8 @@
 import os
 import unittest
 
-from pacyam.pacyam import VariableManager, BuildException
+from pacyam.pacyam import VariableManager
+
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
