@@ -4,6 +4,7 @@ from argparse import ArgumentParser
 from collections import OrderedDict
 import json
 import os
+import shutil
 import subprocess
 import sys
 from tempfile import NamedTemporaryFile
@@ -382,13 +383,29 @@ class PackerTemplateMerger:
             process.poll()
 
 
+def cleanup():
+    types = [
+        'virtualbox-iso',
+        'qemu',
+        'virtualbox-ovf'
+    ]
+    print('\nCleanup up output directories...')
+    for build_type in types:
+        directory = f'output-{build_type}'
+        if os.path.exists(directory):
+            shutil.rmtree(directory, ignore_errors=True)
+
 
 def main():
     """Setup and run the merger after figuring out command line arguments
     """
     command_line_args = parse_arguments(sys.argv[1:])
-    merger = PackerTemplateMerger(command_line_args)
-    merger.assemble_template()
+    try:
+        merger = PackerTemplateMerger(command_line_args)
+        merger.assemble_template()
+    except KeyboardInterrupt:
+        pass
+    cleanup()
 
 if __name__ == '__main__':
     main()
