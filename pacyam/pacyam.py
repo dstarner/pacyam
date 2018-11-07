@@ -8,15 +8,11 @@ import shutil
 import subprocess
 import sys
 from tempfile import NamedTemporaryFile
-import typing
 
 from jinja2 import Environment, FileSystemLoader, BaseLoader
-from pycheckey import KeyEnsurer
 import yaml
 
-from dataclasses import dataclass
-
-__version__ = '0.2.1'
+__version__ = '0.5.0'
 
 sys.tracebacklimit = 1
 
@@ -104,21 +100,19 @@ class BuildException(Exception):
     pass
 
 
-@dataclass
 class Configuration:
     """Configuration object for managing the build process
     """
-
-    config_file_path: str             # Where the config file is located
-    root_directory: str               # The root directory for the templates
-    template_paths: typing.List[str]  # A list of paths to the templates
-    variable_paths: typing.List[str]  # A list of paths to the variables
 
     # Keys required in config file for the build process to run
     required_keys = [
         'templates',
         'variables'
     ]
+
+    def __init__(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
 
     @staticmethod
     def build_config_file_path(root_directory, config_path):
@@ -127,14 +121,14 @@ class Configuration:
         full_path = os.path.join(root_directory, config_path)
         if os.path.isfile(full_path):
             return full_path
-        raise BuildException(f'Could not find the config file "{full_path}".')
+        raise BuildException('Could not find the config file "%s".' % full_path)
 
     @classmethod
     def load(cls, root_directory, config_file_name):
         """Read and validate the config file into a Configuration object
         """
         if not os.path.isdir(root_directory):
-            raise BuildException(f'Root directory "{root_directory}"" not found.')
+            raise BuildException('Root directory "%s" not found.' % root_directory)
 
         config_path = cls.build_config_file_path(root_directory, config_file_name)
 
@@ -143,13 +137,13 @@ class Configuration:
                 # OrderedDict ensures things are loaded in correct order
                 data = json.load(config_file, object_pairs_hook=OrderedDict)
             except json.decoder.JSONDecodeError:
-                raise BuildException(f'Error parsing JSON file at "{config_path}".')
+                raise BuildException('Error parsing JSON file at "%s".' % config_path)
 
-            ensurer = KeyEnsurer(data=data, required_keys=cls.required_keys)
-            if not ensurer.validate():
+            keys_present = [key in data for key in cls.required_keys]
+            if not all(keys_present):
                 separator = "\n  - "
                 raise BuildException(
-                    f'Missing required keys: {separator + separator.join(ensurer.missing)}'
+                    'Required Keys: %s' % (separator + separator.join(cls.required_keys))
                 )
 
         return Configuration(
@@ -360,7 +354,7 @@ class PackerTemplateMerger:
             self._divider()
             print('-- Error validating template --')
             for error in output.split('*')[1:]:
-                print(f'* {error}')
+                print('* %s' % error)
             return False
 
         print('-- Template Passed Validation --')
@@ -370,7 +364,7 @@ class PackerTemplateMerger:
         """Run `packer build` on a manifest_file path
         """
         process = subprocess.Popen(
-            f'packer build {manifest_file}',
+            'packer build %s' % manifest_file,
             stdout=subprocess.PIPE,
             shell=True
         )
