@@ -12,7 +12,7 @@ from tempfile import NamedTemporaryFile
 from jinja2 import Environment, FileSystemLoader, BaseLoader
 import yaml
 
-__version__ = '0.5.0'
+__version__ = '0.6.0'
 
 sys.tracebacklimit = 1
 
@@ -385,7 +385,7 @@ def cleanup():
     ]
     print('\nCleanup up output directories...')
     for build_type in types:
-        directory = f'output-{build_type}'
+        directory = 'output-%s' % build_type
         if os.path.exists(directory):
             shutil.rmtree(directory, ignore_errors=True)
 
