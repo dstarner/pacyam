@@ -186,7 +186,7 @@ class VariableManager:
         )
         var_template = jinja_env.from_string(yaml_str)
         rendered_data = var_template.render(**variables)
-        new_data = yaml.load(rendered_data)
+        new_data = yaml.safe_load(rendered_data)
         return new_data if new_data else {}
 
     def _get_variables_from_file(self, full_path):
@@ -254,7 +254,7 @@ class TemplateManager:
         for path in self.template_paths:
             template = jinja_env.get_template(path)
             yaml_string = template.render(self.variables)
-            self.template_data[path] = yaml.load(yaml_string)
+            self.template_data[path] = yaml.safe_load(yaml_string)
 
     def merge_template_data(self):
         """Merge each rendered template into one final template
