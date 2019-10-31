@@ -64,6 +64,6 @@ setuptools.setup(
     ],
     python_requires='>=3.7',
     entry_points = {
-        'console_scripts': ['pacyam=pacyam.pacyam:main'],
-    }
+        'console_scripts': ['pacyam = pacyam.pacyam:main'],
+    },
 )

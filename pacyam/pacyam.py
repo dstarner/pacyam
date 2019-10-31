@@ -12,7 +12,7 @@ from tempfile import NamedTemporaryFile
 from jinja2 import Environment, FileSystemLoader, BaseLoader
 import yaml
 
-__version__ = '1.0'
+__version__ = '1.1'
 
 sys.tracebacklimit = 1
 
