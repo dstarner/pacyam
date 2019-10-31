@@ -62,6 +62,13 @@ def parse_arguments(args):
         help='Output the compiled manifest to the console, don\'t actually run anything.'
     )
     parser.add_argument(
+        '--build-type',
+        dest='build_type',
+        default="",
+        type=str,
+        help='Run a specific builder from the compiled manifest'
+    )
+    parser.add_argument(
         '--version',
         action='version',
         help='Show the current version of PyYam installed.',
@@ -363,8 +370,12 @@ class PackerTemplateMerger:
     def _build_template(self, manifest_file):
         """Run `packer build` on a manifest_file path
         """
+        arguments = []
+        if self.options.build_type:
+            arguments.append("--only=%s" % self.options.build_type)
+
         process = subprocess.Popen(
-            'packer build %s' % manifest_file,
+            'packer build %s %s' % (" ".join(arguments), manifest_file),
             stdout=subprocess.PIPE,
             shell=True
         )
