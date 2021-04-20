@@ -11,7 +11,7 @@ mccabe==0.6.1
 more-itertools==4.3.0
 packaging==19.2
 pluggy==0.13.0
-py==1.6.0
+py==1.10.0
 pycheckey==0.3
 pylint==2.1.1
 pyparsing==2.4.2
